@@ -52,7 +52,6 @@ const QueueList = () => {
     const interval = setInterval(() => {
       setTime(moment().format("MMMM D YYYY, h:mm:ss a"));
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -67,11 +66,7 @@ const QueueList = () => {
       const selectedDoctor = doctID
         ? doctors?.find((doc) => doc.user_id.toString() === doctID)
         : null;
-
-      console.log(doctID, selectedDoctor, doctors);
-
       if (doctID && selectedDoctor) {
-        // Valid doctID, ensure name is consistent
         const expectedName = `${selectedDoctor.f_name} ${selectedDoctor.l_name}`;
         if (doctname !== expectedName) {
           setSearchParams({
@@ -83,7 +78,6 @@ const QueueList = () => {
           });
         }
       } else {
-        // Invalid or no doctID, default to first doctor
         const firstDoctor = doctors[0];
         setSearchParams({
           clinic_id: clinic_id || "",
@@ -113,69 +107,66 @@ const QueueList = () => {
     setisLOad(false);
     return res.data;
   };
-  // Query to fetch appointments
   const { data, error, isLoading } = useQuery({
     queryKey: ["appointments-queue", doctID, selectedDate, clinic_id],
     queryFn: fetchAppointments,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
     enabled: !!doctID,
   });
 
   if (isLoading || doctorsLoading || isLOad) return <Loading />;
   if (error) return <Text color="red.500">Failed to load appointments</Text>;
   const appointments = data || [];
-  // Separate current and next appointments
   const currentAppointment = appointments[0] || null;
-  const nextAppointments = appointments.slice(1); // All but the first one
+  const nextAppointments = appointments.slice(1);
 
   return (
-    <Box p={4} bg="blackAlpha.800" minH="100vh" color="white">
-      <Grid
-        templateColumns="1fr 3fr 1fr"
-        gap={6}
-        bg={"#fff"}
-        p={3}
-        borderRadius={5}
-        alignContent={"center"}
-        alignItems={"center"}
+    <Box p={{ base: 2, md: 6 }} bg="gray.100" minH="100vh">
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        align={{ base: "stretch", md: "center" }}
+        justify="space-between"
+        bg="white"
+        p={{ base: 3, md: 5 }}
+        borderRadius="lg"
+        boxShadow="md"
+        mb={4}
+        gap={4}
       >
-        {/* Left side - Logo */}
-        <Box>
+        {/* Logo */}
+        <Flex align="center" gap={2} mb={{ base: 2, md: 0 }}>
           <Image
-            w={20}
+            w={{ base: 12, md: 20 }}
             src={`${imageBaseURL}/${logo?.value}`}
             fallbackSrc={"/admin/logo.png"}
+            alt="Logo"
           />
-        </Box>
-
-        {/* Middle - Doctor label */}
+        </Flex>
+        {/* Doctor and Date Selector */}
         <Flex
-          textAlign="center"
-          w={"100%"}
-          justifyContent={"center"}
-          gap={4}
-          alignItems={"center"}
+          direction={{ base: "column", sm: "row" }}
+          align="center"
+          gap={3}
+          flex={1}
+          justify="center"
         >
           <Text
-            fontSize="2xl"
+            fontSize={{ base: "lg", md: "2xl" }}
             fontWeight="bold"
             color="blue.600"
-            cursor={"pointer"}
+            cursor={ParamsDoctor ? "not-allowed" : "pointer"}
             onClick={() => {
-              if (!ParamsDoctor) {
-                setselectDoc(!selectDoc);
-              }
+              if (!ParamsDoctor) setselectDoc(!selectDoc);
             }}
           >
             Doctor {doctname}
           </Text>
           {selectDoc && (
             <>
-              {" "}
               <Select
-                placeholder={doctname ? doctname : "Select option"}
-                w={60}
-                color={"#000"}
+                placeholder={doctname ? doctname : "Select Doctor"}
+                w={{ base: "100%", sm: 48 }}
+                color="#000"
                 value={selectDoc}
                 onChange={(e) => {
                   const doct = JSON.parse(e.target.value);
@@ -188,7 +179,7 @@ const QueueList = () => {
               >
                 {doctors.map((doct) => (
                   <option
-                    color={"#000"}
+                    color="#000"
                     key={doct.id}
                     value={JSON.stringify(doct)}
                   >
@@ -198,8 +189,8 @@ const QueueList = () => {
               </Select>
               <Input
                 placeholder={"Select Date"}
-                w={60}
-                color={"#000"}
+                w={{ base: "100%", sm: 48 }}
+                color="#000"
                 value={selectedDate}
                 type="date"
                 max={todayDate()}
@@ -212,118 +203,113 @@ const QueueList = () => {
             </>
           )}
         </Flex>
+        {/* Time */}
+        <Box textAlign="center">
+          <Text fontSize={{ base: "md", md: "xl" }} fontWeight={600} color="blue.600">
+            {time}
+          </Text>
+        </Box>
+      </Flex>
 
-        {/* Right side - Date and Time */}
-      </Grid>
-
-      {/* Main Content */}
-      <Grid templateColumns="1fr 2fr" gap={6} mt={6} minH={"87vh"}>
-        {/* Left - Next Appointments */}
+      <Grid
+        templateColumns={{ base: "1fr", md: "1fr 2fr" }}
+        gap={6}
+        mt={2}
+        minH={{ base: "auto", md: "80vh" }}
+      >
+        {/* Next Appointments */}
         <Box
-          bg="blackAlpha.900"
-          p={4}
-          borderRadius="md"
-          minH={"70vh"}
-          px={2}
-          pt={2}
-          borderRight={"sm"}
-          color={"#000"}
+          bg="white"
+          p={{ base: 3, md: 5 }}
+          borderRadius="lg"
+          boxShadow="sm"
+          minH={{ base: "auto", md: "70vh" }}
         >
           <Text
-            fontSize="2xl"
+            fontSize={{ base: "xl", md: "2xl" }}
             fontWeight="bold"
             mb={4}
-            textAlign={"center"}
-            bg={"#fff"}
+            textAlign="center"
+            color="blue.700"
           >
             Next Patients
           </Text>
-          <List spacing={3}>
-            {nextAppointments.length > 0 ? (
-              <Table variant="simple">
-                <Thead>
-                  <Tr>
-                    {" "}
-                    <Th color="#fff">S No.</Th>
-                    <Th color="#fff">ID</Th>
-                    <Th color="#fff">Patient Name</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {nextAppointments.map((appointment, index) => (
-                    <Tr key={appointment.id} color={"#fff"} fontWeight={600}>
-                      {" "}
+          <Box overflowX="auto">
+            <Table variant="simple" size={{ base: "sm", md: "md" }}>
+              <Thead>
+                <Tr>
+                  <Th>S No.</Th>
+                  <Th>ID</Th>
+                  <Th>Patient Name</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {nextAppointments.length > 0 ? (
+                  nextAppointments.map((appointment, index) => (
+                    <Tr key={appointment.id} fontWeight={600}>
                       <Td>#{index + 2}</Td>
                       <Td>#{appointment.appointment_id}</Td>
                       <Td fontWeight="bold">
-                        {" "}
-                        {appointment.patient_f_name}{" "}
-                        {appointment.patient_l_name}
+                        {appointment.patient_f_name} {appointment.patient_l_name}
                       </Td>
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            ) : (
-              <Text color={"#fff"}>No upcoming patients</Text>
-            )}
-          </List>
+                  ))
+                ) : (
+                  <Tr>
+                    <Td colSpan={3} textAlign="center">
+                      <Text color="gray.500">No upcoming patients</Text>
+                    </Td>
+                  </Tr>
+                )}
+              </Tbody>
+            </Table>
+          </Box>
         </Box>
 
-        <Box>
-          {" "}
-          <Box textAlign="center" bg="#fff" p={4} borderRadius="md" mb={5}>
-            <Text fontSize="3xl" fontWeight={700} py={3} color={"blue.600"}>
-              {time}
-            </Text>
-          </Box>
-          <Box bg="blackAlpha.900" borderRadius="md" pb={4} p={2}>
+        {/* Current Appointment */}
+        {/* <Box>
+          <Box
+            bg="blue.50"
+            borderRadius="lg"
+            boxShadow="md"
+            border="1px solid #90cdf4"
+            p={{ base: 3, md: 6 }}
+            mb={4}
+            minH={{ base: "auto", md: "60vh" }}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+          >
             <Text
-              fontSize="2xl"
+              fontSize={{ base: "xl", md: "2xl" }}
               fontWeight="bold"
               mb={4}
-              px={2}
-              py={2}
-              bg={"#fff"}
-              borderRadius={"sm"}
-              color={"#000"}
-              textAlign={"center"}
+              color="blue.700"
+              textAlign="center"
             >
               Now
             </Text>
             {currentAppointment ? (
-              <Box
-                bg="gray.900"
-                height="full"
-                p={4}
-                m={4}
-                color="white"
-                borderRadius={"sm"}
-              >
-                <Text fontSize={"3xl"} fontWeight={700} textAlign={"center"}>
+              <Box textAlign="center">
+                <Text fontSize={{ base: "lg", md: "2xl" }} fontWeight={700} mb={2}>
                   Appointment ID: #{currentAppointment.appointment_id}
                 </Text>
-                <Text fontWeight="bold" fontSize="2xl" textAlign={"center"}>
-                  Name - {currentAppointment.patient_f_name}{" "}
-                  {currentAppointment.patient_l_name}
+                <Text fontWeight="bold" fontSize={{ base: "md", md: "xl" }} mb={2}>
+                  Name - {currentAppointment.patient_f_name} {currentAppointment.patient_l_name}
                 </Text>
-
-                <Text textAlign={"center"} fontSize={"xl"}>
-                  Time:{" "}
-                  {moment(currentAppointment.time, "hh:mm:ss").format(
-                    "hh:mm A"
-                  )}
+                <Text fontSize={{ base: "md", md: "lg" }}>
+                  Time: {moment(currentAppointment.time, "hh:mm:ss").format("hh:mm A")}
                 </Text>
-                <Text textAlign={"center"} fontSize={"xl"}>
+                <Text fontSize={{ base: "md", md: "lg" }}>
                   Date: {currentAppointment.date}
                 </Text>
               </Box>
             ) : (
-              <Text>No patient is currently being seen</Text>
+              <Text color="gray.500">No patient is currently being seen</Text>
             )}
           </Box>
-        </Box>
-        {/* Right - Current Appointment */}
+        </Box> */}
       </Grid>
     </Box>
   );

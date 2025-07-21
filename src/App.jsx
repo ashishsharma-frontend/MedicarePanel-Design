@@ -89,7 +89,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loading />}>
-        {location.pathname === "/queue" ? (
+        {location.pathname === "/queue" || location.pathname === "/admin/queue" ? (
           <QueueList />
         ) : admin ? (
           <Box display="flex" width="100%">

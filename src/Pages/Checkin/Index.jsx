@@ -229,10 +229,14 @@ export default function Checkin() {
                   size={{ base: "sm", md: "md" }}
                   colorScheme="blue"
                   onClick={() => {
+                    if (!selectedClinic?.id) {
+                      alert("Please select a clinic first!");
+                      return;
+                    }
                     const baseUrl = `${window.location.protocol}//${window.location.host}`;
                     const isDoctor = admin.role.name.toLowerCase() === "doctor";
                     const queryParams = new URLSearchParams({
-                      clinic_id: selectedClinic?.id || "",
+                      clinic_id: selectedClinic.id,
                       ...(isDoctor && { doct: admin.id }),
                       ...(isDoctor && { isSelectedDoctor: admin.id }),
                     }).toString();
