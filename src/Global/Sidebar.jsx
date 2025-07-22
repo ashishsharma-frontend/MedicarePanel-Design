@@ -66,7 +66,7 @@ const getLinkSections = (isSuperAdmin) => {
       links: [{ name: "Dashboard", icon: AiFillDashboard, superadmin: true }],
     },
     {
-      section: "Appointments & Checkins",
+      section: "QMS",
       links: [
         { name: "Checkins", icon: BiCheckShield, permission: "CHECKIN_VIEW" },
         {
@@ -199,7 +199,7 @@ const getLinkSections = (isSuperAdmin) => {
       ],
     },
     {
-      section: "Notifications & Settings",
+      section: "Settings",
       links: [
         {
           name: "Contact-Us-Form",

@@ -199,7 +199,7 @@ export default function UpdateAppointment() {
     mutation.mutate({ ...formData, status: selectedOption });
   };
 
-  if (isLoading || mutation.isPending || statusMutation.isPending)
+  if (isLoading || mutation.isPending || statusMutation.isPending || !appointmntData)
     return <Loading />;
 
   return (
@@ -226,7 +226,7 @@ export default function UpdateAppointment() {
             <HStack spacing={3} mb={{ base: 2, md: 0 }}>
               {getStatusBadge(appointmntData?.status)}
               <Badge colorScheme="gray" px={3} py={1} borderRadius="md">
-                Source - {appointmntData.source}
+                Source - {appointmntData?.source || "N/A"}
               </Badge>
             </HStack>
             <HStack spacing={3}>
@@ -247,6 +247,20 @@ export default function UpdateAppointment() {
                 colorScheme="gray"
               >
                 Back
+              </Button>
+              <Button
+                size="md"
+                colorScheme="blue"
+                variant="solid"
+                onClick={() => {
+                  const nextId = Number(id) + 1;
+                  if (!isNaN(nextId)) {
+                    navigate(`/appointment/${nextId}`);
+                  }
+                }}
+                ml={2}
+              >
+                Next
               </Button>
             </HStack>
           </Flex>
@@ -286,7 +300,7 @@ export default function UpdateAppointment() {
                               Patient Details
                             </Heading>
                             <Link
-                              to={`/patient/${appointmntData.patient_id}`}
+                              to={appointmntData?.patient_id ? `/patient/${appointmntData.patient_id}` : "#"}
                               as={RouterLink}
                             >
                               <BiLinkExternal fontSize={20} color={theme.colors.blue[500]} />
@@ -303,7 +317,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.patient_f_name}
+                                  defaultValue={appointmntData?.patient_f_name || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -316,7 +330,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.patient_l_name}
+                                  defaultValue={appointmntData?.patient_l_name || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -331,7 +345,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.patient_phone}
+                                  defaultValue={appointmntData?.patient_phone || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -344,7 +358,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.patient_gender}
+                                  defaultValue={appointmntData?.patient_gender || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -361,7 +375,7 @@ export default function UpdateAppointment() {
                               Doctor Details
                             </Heading>
                             <Link
-                              to={`/doctor/${appointmntData.doct_id}`}
+                              to={appointmntData?.doct_id ? `/doctor/${appointmntData.doct_id}` : "#"}
                               as={RouterLink}
                             >
                               <BiLinkExternal fontSize={20} color={theme.colors.blue[500]} />
@@ -378,7 +392,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.doct_f_name}
+                                  defaultValue={appointmntData?.doct_f_name || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -391,7 +405,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.doct_l_name}
+                                  defaultValue={appointmntData?.doct_l_name || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -406,7 +420,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.doct_specialization}
+                                  defaultValue={appointmntData?.doct_specialization || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -419,7 +433,7 @@ export default function UpdateAppointment() {
                                   isReadOnly
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.dept_title}
+                                  defaultValue={appointmntData?.dept_title || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -447,7 +461,7 @@ export default function UpdateAppointment() {
                                   size="md"
                                   fontWeight="600"
                                   variant="outline"
-                                  value={moment(appointmntData?.date).format("DD-MM-YYYY")}
+                                  value={appointmntData?.date ? moment(appointmntData.date).format("DD-MM-YYYY") : ""}
                                   onClick={() => {
                                     if (
                                       appointmntData?.status == "Confirmed" ||
@@ -470,7 +484,7 @@ export default function UpdateAppointment() {
                                   size="md"
                                   fontWeight="600"
                                   variant="outline"
-                                  value={moment(appointmntData?.time_slots, "hh:mm:ss").format("hh:mm A")}
+                                  value={appointmntData?.time_slots ? moment(appointmntData.time_slots, "hh:mm:ss").format("hh:mm A") : ""}
                                   onClick={() => {
                                     if (
                                       appointmntData?.status == "Confirmed" ||
@@ -593,7 +607,7 @@ export default function UpdateAppointment() {
                               <Select
                                 placeholder="Select payment status"
                                 variant="outline"
-                                value={appointmntData?.payment_status}
+                                value={appointmntData?.payment_status || ""}
                                 {...register("payment_status")}
                                 isReadOnly
                                 onChange={(e) => {
@@ -631,7 +645,7 @@ export default function UpdateAppointment() {
                                   size="md"
                                   fontWeight="600"
                                   variant="outline"
-                                  defaultValue={appointmntData.meeting_id}
+                                  defaultValue={appointmntData?.meeting_id || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -644,7 +658,7 @@ export default function UpdateAppointment() {
                                   size="md"
                                   fontWeight="600"
                                   variant="outline"
-                                  value={appointmntData.meeting_link}
+                                  value={appointmntData?.meeting_link || ""}
                                   borderColor={borderColor}
                                 />
                               </FormControl>
@@ -690,7 +704,7 @@ export default function UpdateAppointment() {
                 </TabPanel>
               )}
               <TabPanel px={{ base: 2.5, md: 6 }} py={{ base: 4, md: 6 }}>
-                <PatientFiles id={appointmntData.patient_id} />
+                <PatientFiles id={appointmntData?.patient_id || ""} />
               </TabPanel>
             </TabPanels>
           </Tabs>

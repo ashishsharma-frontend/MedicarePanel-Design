@@ -28,6 +28,7 @@ import ErrorPage from "../../Components/ErrorPage";
 import useHasPermission from "../../Hooks/HasPermission";
 import NotAuth from "../../Components/NotAuth";
 import moment from "moment";
+import DateRangeCalender from "../../Components/DateRangeCalender";
 import { RefreshCwIcon } from "lucide-react";
 import useSearchFilter from "../../Hooks/UseSearchFilter";
 
@@ -38,6 +39,10 @@ export default function AppointmentsByPatientID({ patientID }) {
   const id = "Errortoast";
   const boxRef = useRef(null);
   const [statusFilters, setStatusFilters] = useState([]); // Track status filters
+  const [dateRange, setDateRange] = useState({
+    startDate: moment().format("YYYY-MM-DD"),
+    endDate: moment().format("YYYY-MM-DD"),
+  });
   const { hasPermission } = useHasPermission();
   const queryClient = useQueryClient();
 
@@ -46,7 +51,7 @@ export default function AppointmentsByPatientID({ patientID }) {
   };
 
   const getData = async () => {
-    const url = `get_appointments?patient_id=${patientID}`;
+    const url = `get_appointments?patient_id=${patientID}&start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
     const res = await GET(admin.token, url);
     const rearrangedArray = res?.data.map((item) => {
       const {
@@ -103,7 +108,7 @@ export default function AppointmentsByPatientID({ patientID }) {
   };
 
   const { isLoading, data, error, isFetching, isRefetching } = useQuery({
-    queryKey: ["appointments", "patient", patientID, statusFilters],
+    queryKey: ["appointments", "patient", patientID, statusFilters, dateRange],
     queryFn: getData,
   });
   const { handleSearchChange, filteredData } = useSearchFilter(data);
@@ -179,13 +184,18 @@ export default function AppointmentsByPatientID({ patientID }) {
                 <Checkbox value="Cancellation">Cancellation Initiated</Checkbox>
               </Flex>
             </CheckboxGroup>{" "}
+            <DateRangeCalender
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              size="md"
+            />
             <Button
               isLoading={isFetching || isRefetching}
               size={"sm"}
               colorScheme="blue"
               onClick={() => {
                 queryClient.invalidateQueries(
-                  ["appointments", "patient", patientID, statusFilters],
+                  ["appointments", "patient", patientID, statusFilters, dateRange],
                   { refetchInactive: true }
                 );
               }}

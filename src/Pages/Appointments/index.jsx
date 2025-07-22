@@ -48,6 +48,7 @@ import DateRangeCalender from "../../Components/DateRangeCalender";
 import { useSelectedClinic } from "../../Context/SelectedClinic";
 import getStatusColor from "../../Hooks/GetStatusColor";
 import imageBaseURL from "../../Controllers/image";
+import moment from "moment";
 
 const getPageIndices = (currentPage, itemsPerPage) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -71,9 +72,9 @@ export default function Appointments() {
   const queryClient = useQueryClient();
   const { selectedClinic } = useSelectedClinic();
   const [cacellationReq, setCacellationReq] = useState([]);
-  const [dateRange, setdateRange] = useState({
-    startDate: null,
-    endDate: null,
+  const [dateRange, setDateRange] = useState({
+    startDate: moment().format("YYYY-MM-DD"),
+    endDate: moment().format("YYYY-MM-DD"),
   });
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -90,9 +91,7 @@ export default function Appointments() {
   };
 
   const getData = async () => {
-    const url = `get_appointments?start=${startIndex}&end=${endIndex}&search=${debouncedSearchQuery}&start_date=${
-      dateRange.startDate || ""
-    }&end_date=${dateRange.endDate || ""}&status=${statusFilters.join(
+    const url = `get_appointments?start=${startIndex}&end=${endIndex}&search=${debouncedSearchQuery}&start_date=${dateRange.startDate}&end_date=${dateRange.endDate}&status=${statusFilters.join(
       ", "
     )}&type=${typeFilters.join(
       ", "
@@ -186,7 +185,7 @@ export default function Appointments() {
                   />
                   <DateRangeCalender
                     dateRange={dateRange}
-                    setDateRange={setdateRange}
+                    setDateRange={setDateRange}
                     size="md"
                   />
                   <Button
@@ -225,7 +224,7 @@ export default function Appointments() {
                     />
                     <DateRangeCalender
                       dateRange={dateRange}
-                      setDateRange={setdateRange}
+                      setDateRange={setDateRange}
                       size="md"
                     />
                   </HStack>
@@ -300,9 +299,7 @@ export default function Appointments() {
                     queryClient.invalidateQueries(["appointments", page, debouncedSearchQuery, statusFilters], { refetchInactive: true }); 
                   }} 
                   rightIcon={<RefreshCwIcon size={16} />} 
-                  fontWeight="500" 
-                  borderRadius="lg"
-                  _hover={{ bg: "blue.600" }}
+         
                 >
                   Refresh
                 </Button>

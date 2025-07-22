@@ -41,6 +41,10 @@ import Loading from "../../Components/Loading";
 import { useForm } from "react-hook-form";
 import ShowToast from "../../Controllers/ShowToast";
 import AddMedicine from "../Medicines/AddMedicine";
+import { FaPrint } from "react-icons/fa";
+import api from "../../Controllers/api";
+import { FaUserMd, FaUser, FaCalendarAlt, FaHeartbeat, FaNotesMedical, FaVial, FaClipboardCheck, FaSyringe } from "react-icons/fa";
+import imageBaseURL from "../../Controllers/image";
 
 const handleUpdate = async (data) => {
   const res = await ADD(admin.token, "add_prescription", data);
@@ -59,65 +63,134 @@ function hasEmptyValue(arr) {
   );
 }
 
+// Add printPdf function from AllPrescription.jsx
+const printPdf = (pdfUrl) => {
+  const newWindow = window.open(pdfUrl, "_blank");
+  if (newWindow) {
+    newWindow.focus();
+    newWindow.onload = () => {
+      newWindow.load();
+      newWindow.onafterprint = () => {
+        newWindow.close();
+      };
+    };
+  }
+};
+
 // Preview Component
 const PrescriptionPreview = ({ medicines, formData, appointmentData }) => {
   const bg = useColorModeValue("white", "gray.700");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const borderColor = useColorModeValue("blue.400", "blue.300");
+  const sectionBg = useColorModeValue("gray.50", "gray.800");
+  const accent = useColorModeValue("blue.600", "blue.300");
+  const labelColor = useColorModeValue("gray.600", "gray.300");
+  const valueColor = useColorModeValue("gray.800", "gray.100");
+
+  // Helper to show value or dash
+  const showValue = (val) => (val !== undefined && val !== null && val !== "" ? val : "—");
 
   return (
-    <Card bg={bg} border="1px" borderColor={borderColor} h="fit-content">
-      <CardBody p={4}>
-        <Heading size="md" mb={4} color="blue.600">
-          Prescription Preview
-        </Heading>
-        
+    <Card bg={bg} borderLeft="6px solid" borderColor={borderColor} boxShadow="lg" w="100%" minW={0} mx={{ base: 0, sm: 0 }}>
+      <CardBody p={{ base: 3, md: 6 }}>
+        {/* Header with logo and clinic name */}
+        <Flex align="center" mb={6} gap={4} direction={{ base: "column", sm: "row" }}>
+          <Box boxSize={12} bg="blue.100" borderRadius="full" display="flex" alignItems="center" justifyContent="center">
+            {/* Placeholder logo */}
+            <FaClipboardCheck size={32} color={accent} />
+          </Box>
+          <Box>
+            <Heading size="lg" color={accent} fontWeight="bold" letterSpacing="wide">MediCare Clinic</Heading>
+            <Text fontSize="sm" color={labelColor}>Prescription Report</Text>
+          </Box>
+        </Flex>
+
         {/* Patient & Doctor Info */}
-        <Box mb={4} p={3} bg="blue.50" borderRadius="md">
-          <Text fontWeight="bold" mb={2}>Patient Information</Text>
-          <Text fontSize="sm">Name: {appointmentData?.patient_f_name} {appointmentData?.patient_l_name}</Text>
-          <Text fontSize="sm">Doctor: {appointmentData?.doct_f_name} {appointmentData?.doct_l_name}</Text>
-          <Text fontSize="sm">Date: {new Date().toLocaleDateString()}</Text>
+        <Box mb={5} p={4} bg={sectionBg} borderRadius="md" boxShadow="sm">
+          <Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={4} alignItems="center">
+            <Flex align="center" gap={2}>
+              <FaUser color={accent} />
+              <Text fontWeight="bold" color={labelColor}>Patient:</Text>
+              <Text color={valueColor}>{appointmentData?.patient_f_name} {appointmentData?.patient_l_name}</Text>
+            </Flex>
+            <Flex align="center" gap={2}>
+              <FaUserMd color={accent} />
+              <Text fontWeight="bold" color={labelColor}>Doctor:</Text>
+              <Text color={valueColor}>{appointmentData?.doct_f_name} {appointmentData?.doct_l_name}</Text>
+            </Flex>
+            <Flex align="center" gap={2} gridColumn={{ base: "1", sm: "span 2" }}>
+              <FaCalendarAlt color={accent} />
+              <Text fontWeight="bold" color={labelColor}>Date:</Text>
+              <Text color={valueColor}>{new Date().toLocaleDateString()}</Text>
+            </Flex>
+          </Grid>
         </Box>
 
         {/* Physical Information */}
-        {Object.keys(formData).length > 0 && (
-          <Box mb={4}>
-            <Text fontWeight="bold" mb={2}>Physical Information</Text>
-            <Grid templateColumns="repeat(2, 1fr)" gap={2} fontSize="sm">
-              {formData.pulse_rate && <Text>Pulse Rate: {formData.pulse_rate}</Text>}
-              {formData.temperature && <Text>Temperature: {formData.temperature}</Text>}
-              {formData.blood_pressure && <Text>BP: {formData.blood_pressure}</Text>}
-              {formData.diabetic && <Text>Diabetic: {formData.diabetic}</Text>}
-            </Grid>
-          </Box>
-        )}
+        <Box mb={5} p={4} bg={sectionBg} borderRadius="md" boxShadow="sm">
+          <Flex align="center" mb={2} gap={2}>
+            <FaHeartbeat color={accent} />
+            <Text fontWeight="bold" color={accent}>Physical Information</Text>
+          </Flex>
+          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={2} fontSize="sm">
+            <Text color={labelColor}>Food Allergies: <span style={{ color: valueColor }}>{showValue(formData.food_allergies)}</span></Text>
+            <Text color={labelColor}>Tendency to Bleed: <span style={{ color: valueColor }}>{showValue(formData.tendency_bleed)}</span></Text>
+            <Text color={labelColor}>Heart Disease: <span style={{ color: valueColor }}>{showValue(formData.heart_disease)}</span></Text>
+            <Text color={labelColor}>Blood Pressure: <span style={{ color: valueColor }}>{showValue(formData.blood_pressure)}</span></Text>
+            <Text color={labelColor}>Diabetic: <span style={{ color: valueColor }}>{showValue(formData.diabetic)}</span></Text>
+            <Text color={labelColor}>Surgery: <span style={{ color: valueColor }}>{showValue(formData.surgery)}</span></Text>
+            <Text color={labelColor}>Accident: <span style={{ color: valueColor }}>{showValue(formData.accident)}</span></Text>
+            <Text color={labelColor}>Others: <span style={{ color: valueColor }}>{showValue(formData.others)}</span></Text>
+            <Text color={labelColor}>Medical History: <span style={{ color: valueColor }}>{showValue(formData.medical_history)}</span></Text>
+            <Text color={labelColor}>Current Medication: <span style={{ color: valueColor }}>{showValue(formData.current_medication)}</span></Text>
+            <Text color={labelColor}>Female Pregnancy: <span style={{ color: valueColor }}>{showValue(formData.female_pregnancy)}</span></Text>
+            <Text color={labelColor}>Breast Feeding: <span style={{ color: valueColor }}>{showValue(formData.breast_feeding)}</span></Text>
+            <Text color={labelColor}>Pulse Rate: <span style={{ color: valueColor }}>{showValue(formData.pulse_rate)}</span></Text>
+            <Text color={labelColor}>Temperature: <span style={{ color: valueColor }}>{showValue(formData.temperature)}</span></Text>
+          </Grid>
+        </Box>
 
-        {/* Medicines Table */}
+        {/* Medicines Section - Responsive */}
         {medicines.length > 0 && (
-          <Box mb={4}>
-            <Text fontWeight="bold" mb={2}>Medicines</Text>
-            <Box overflowX="auto">
-              <Table size="sm" variant="simple">
-                <Thead>
+          <Box mb={5}>
+            <Flex align="center" mb={2} gap={2}>
+              <FaSyringe color={accent} />
+              <Text fontWeight="bold" color={accent}>Medicines</Text>
+            </Flex>
+            {/* Mobile: Card List */}
+            <Box display={{ base: 'block', md: 'none' }}>
+              {medicines.map((med, index) => (
+                <Box key={index} mb={3} p={3} borderWidth="1px" borderRadius="md" bg="white" boxShadow="xs">
+                  <Text fontWeight="semibold" fontSize="sm" color={accent}>{showValue(med.medicine_name)}</Text>
+                  <Text fontSize="xs">Dosage: <b>{showValue(med.dosage)}</b></Text>
+                  <Text fontSize="xs">Duration: {showValue(med.duration)}</Text>
+                  <Text fontSize="xs">Time: {showValue(med.time)}</Text>
+                  <Text fontSize="xs">Dose Interval: {showValue(med.dose_interval)}</Text>
+                  <Text fontSize="xs">Notes: {showValue(med.notes)}</Text>
+                </Box>
+              ))}
+            </Box>
+            {/* Desktop: Table */}
+            <Box display={{ base: 'none', md: 'block' }} overflowX="auto" borderRadius="md" borderWidth={{ md: '1px', lg: '0' }}>
+              <Table size="sm" variant="simple" minWidth="700px">
+                <Thead bg={sectionBg}>
                   <Tr>
-                    <Th>Medicine</Th>
-                    <Th>Dosage</Th>
-                    <Th>Duration</Th>
-                    <Th>Time</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Medicine</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Dosage</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Duration</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Time</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Dose Interval</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Notes</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
                   {medicines.map((med, index) => (
-                    <Tr key={index}>
-                      <Td>
-                        <Text fontWeight="medium">{med.medicine_name}</Text>
-                        {med.notes && <Text fontSize="xs" color="gray.500">{med.notes}</Text>}
-                      </Td>
-                      <Td>
-                        <Badge colorScheme="blue">{med.dosage}</Badge>
-                      </Td>
-                      <Td fontSize="xs">{med.duration}</Td>
-                      <Td fontSize="xs">{med.time}</Td>
+                    <Tr key={index} _hover={{ bg: sectionBg }}>
+                      <Td><Text fontWeight="medium" fontSize={{ base: "xs", md: "sm" }} color={accent}>{showValue(med.medicine_name)}</Text></Td>
+                      <Td><Badge colorScheme="blue" fontSize={{ base: "xs", md: "sm" }}>{showValue(med.dosage)}</Badge></Td>
+                      <Td fontSize={{ base: "xs", md: "xs" }}>{showValue(med.duration)}</Td>
+                      <Td fontSize={{ base: "xs", md: "xs" }}>{showValue(med.time)}</Td>
+                      <Td fontSize={{ base: "xs", md: "xs" }}>{showValue(med.dose_interval)}</Td>
+                      <Td fontSize={{ base: "xs", md: "xs" }}>{showValue(med.notes)}</Td>
                     </Tr>
                   ))}
                 </Tbody>
@@ -127,39 +200,40 @@ const PrescriptionPreview = ({ medicines, formData, appointmentData }) => {
         )}
 
         {/* Problem & Advice */}
-        {formData.problem_desc && (
-          <Box mb={4}>
-            <Text fontWeight="bold" mb={2}>Problem</Text>
-            <Text fontSize="sm" p={2} bg="gray.50" borderRadius="md">
-              {formData.problem_desc}
-            </Text>
-          </Box>
-        )}
-
-        {formData.test && (
-          <Box mb={4}>
-            <Text fontWeight="bold" mb={2}>Tests</Text>
-            <Text fontSize="sm" p={2} bg="gray.50" borderRadius="md">
-              {formData.test}
-            </Text>
-          </Box>
-        )}
-
-        {formData.advice && (
-          <Box mb={4}>
-            <Text fontWeight="bold" mb={2}>Advice</Text>
-            <Text fontSize="sm" p={2} bg="gray.50" borderRadius="md">
-              {formData.advice}
-            </Text>
-          </Box>
-        )}
-
-        {formData.next_visit && (
-          <Box>
-            <Text fontWeight="bold" mb={2}>Next Visit</Text>
-            <Badge colorScheme="green">After {formData.next_visit} days</Badge>
-          </Box>
-        )}
+        <Box mb={4} p={4} bg={sectionBg} borderRadius="md" boxShadow="sm">
+          <Flex align="center" mb={2} gap={2}>
+            <FaNotesMedical color={accent} />
+            <Text fontWeight="bold" color={accent}>Problem</Text>
+          </Flex>
+          <Text fontSize="sm" p={2} bg="white" borderRadius="md" wordBreak="break-word" color={valueColor}>
+            {showValue(formData.problem_desc)}
+          </Text>
+        </Box>
+        <Box mb={4} p={4} bg={sectionBg} borderRadius="md" boxShadow="sm">
+          <Flex align="center" mb={2} gap={2}>
+            <FaVial color={accent} />
+            <Text fontWeight="bold" color={accent}>Tests</Text>
+          </Flex>
+          <Text fontSize="sm" p={2} bg="white" borderRadius="md" wordBreak="break-word" color={valueColor}>
+            {showValue(formData.test)}
+          </Text>
+        </Box>
+        <Box mb={4} p={4} bg={sectionBg} borderRadius="md" boxShadow="sm">
+          <Flex align="center" mb={2} gap={2}>
+            <FaClipboardCheck color={accent} />
+            <Text fontWeight="bold" color={accent}>Advice</Text>
+          </Flex>
+          <Text fontSize="sm" p={2} bg="white" borderRadius="md" wordBreak="break-word" color={valueColor}>
+            {showValue(formData.advice)}
+          </Text>
+        </Box>
+        <Box p={4} bg={sectionBg} borderRadius="md" boxShadow="sm">
+          <Flex align="center" mb={2} gap={2}>
+            <FaCalendarAlt color={accent} />
+            <Text fontWeight="bold" color={accent}>Next Visit</Text>
+          </Flex>
+          <Badge colorScheme="green" fontSize={{ base: "xs", md: "sm" }}>{formData.next_visit ? `After ${formData.next_visit} days` : "—"}</Badge>
+        </Box>
       </CardBody>
     </Card>
   );
@@ -239,11 +313,19 @@ function AddPrescription() {
         patient_id: patient_id,
         medicines: medicines,
       };
-      await handleUpdate(formData);
+      return await handleUpdate(formData);
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries(["prescription", id]);
       queryClient.invalidateQueries(["prescriptios", appointment_id]);
+      // Use the same print logic as AllPrescription
+      const prescriptionId = res?.id || res?.data?.id || appointment_id;
+      const pdfFile = res?.pdf_file || res?.data?.pdf_file;
+      if (pdfFile) {
+        printPdf(`${imageBaseURL}/${pdfFile}`);
+      } else {
+        printPdf(`${api}/prescription/generatePDF/${prescriptionId}`);
+      }
       navigate(`/appointment/${appointment_id}`);
     },
     onError: (error) => {
@@ -259,19 +341,22 @@ function AddPrescription() {
         <Heading as={"h1"} size={"md"} color="blue.600">
           Add Prescription
         </Heading>
-        <Button
-          w={120}
-          size={"md"}
-          variant={useColorModeValue("blackButton", "gray")}
-          onClick={() => {
-            navigate(-1);
-          }}
-        >
-          Back
-        </Button>
+        <HStack spacing={3}>
+          {/* Removed Print Button */}
+          <Button
+            w={120}
+            size={"md"}
+            variant={useColorModeValue("blackButton", "gray")}
+            onClick={() => {
+              navigate(-1);
+            }}
+          >
+            Back
+          </Button>
+        </HStack>
       </Flex>
 
-      <Grid templateColumns={{ base: "1fr", lg: "1fr 400px" }} gap={6}>
+      <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={6}>
         {/* Left Column - Form */}
         <VStack spacing={6} align="stretch">
           {/* Medicines Section */}
@@ -557,13 +642,13 @@ function AddPrescription() {
               }}
               px={8}
             >
-              Save Prescription
+              Save & Print
             </Button>
           </Flex>
         </VStack>
 
         {/* Right Column - Preview */}
-        <Box position="sticky" top={4}>
+        <Box w="100%" minW={0} position={{ base: "static", lg: "sticky" }} top={4}>
           <PrescriptionPreview 
             medicines={medicines} 
             formData={formData}
