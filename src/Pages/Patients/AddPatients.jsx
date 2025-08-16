@@ -91,6 +91,9 @@ function AddPatients({ nextFn, isOpen, onClose }) {
     }
     // Debug: Check if age is being captured
     console.log("Age value in form:", data.age);
+    console.log("City value in form:", data.city);
+    console.log("Address value in form:", data.address);
+    console.log("All form data:", data);
     
     let formData = {
       ...data,
@@ -231,6 +234,24 @@ function AddPatients({ nextFn, isOpen, onClose }) {
                       {errors.age.message}
                     </FormErrorMessage>
                   )}
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>City</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="Enter city"
+                    {...register("city")}
+                    w="100%"
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>Address</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="Enter address"
+                    {...register("address")}
+                    w="100%"
+                  />
                 </FormControl>
               </SimpleGrid>
             </VStack>

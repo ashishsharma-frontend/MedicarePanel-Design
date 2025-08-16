@@ -57,10 +57,12 @@ const getPageIndices = (currentPage, itemsPerPage) => {
 
 const transformData = (data) => {
   return data?.map((item) => {
-    const { id, f_name, l_name, phone, gender, dob, age, email, image, created_at } =
+    const { id, f_name, l_name, phone, gender, dob, age, email, image, created_at, city, address } =
       item;
     console.log("Raw patient data from API:", item);
     console.log("Age from API:", age, "Type:", typeof age);
+    console.log("City from API:", city, "Type:", typeof city);
+    console.log("Address from API:", address, "Type:", typeof address);
     return {
       id,
       name: `${f_name} ${l_name}`,
@@ -69,6 +71,8 @@ const transformData = (data) => {
       date_Of_Birth: dob ? moment(dob).format("DD MMM YYYY") : "N/A",
       age,
       email: email || "N/A",
+      city: city || "N/A",
+      address: address || "N/A",
       image,
       created_At: moment(created_at).format("DD MMM YYYY hh:mm a"),
     };
@@ -208,131 +212,142 @@ const Patients = () => {
                 </Grid>
               ) : data?.data?.length ? (
                 <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)", xl: "repeat(4, 1fr)" }} gap={{ base: 2, md: 4 }}>
-                  {data.data.map((patient) => (
-                    <Card
-                      key={patient.id}
-                      bg={cardBg}
-                      border="1px solid"
-                      borderColor="gray.300"
-                      borderRadius="lg"
-                      cursor="pointer"
-                      transition="all 0.2s ease-in-out"
-                      _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: "lg",
-                        borderColor: "blue.400"
-                      }}
-                      onClick={() => navigate(`/patient/${patient.id}`)}
-                      p={{ base: 2, md: 4 }}
-                      mx={{ base: 0.5, md: 0 }}
-                    >
-                      <CardBody p={0}>
-                        <VStack spacing={3} align="stretch">
-                          {/* Header with ID Badge and Gender */}
-                          <Flex justify="space-between" align="center">
-                            <Badge colorScheme="purple" py="2px" px="8px" fontSize="xs" borderRadius="none">
-                              #{patient.id}
-                            </Badge>
-                            <Badge colorScheme={patient.gender === "Male" ? "blue" : "pink"} fontSize="0.8em" px={2} py={1} borderRadius="none">
-                              {patient.gender}
-                            </Badge>
-                          </Flex>
-                          {/* Image and Name */}
-                          <HStack spacing={3} align="center">
-                            <Avatar
-                              src={patient.image ? imageBaseURL + patient.image : "/admin/profilePicturePlaceholder.png"}
-                              size="md"
-                              name={`${patient.f_name} ${patient.l_name}`}
-                              bg="purple.500"
-                              color="white"
-                              border="2px solid #805ad5"
-                              fontWeight="bold"
-                            />
-                            <Box flex={1} minW={0}>
-                              <Text fontWeight="600" fontSize="sm" color="gray.800" noOfLines={1}>
-                                {patient.f_name} {patient.l_name}
-                              </Text>
-                              <Text fontSize="xs" color="gray.600" noOfLines={1}>
-                                {patient.phone}
-                              </Text>
-                            </Box>
-                          </HStack>
-                          {/* Bottom details section */}
-                          <Divider borderColor={borderColor} mt={4} />
-                          <Box px={4} py={3} borderBottomRadius="none" bg={useColorModeValue('gray.50', 'gray.800')}>
-                            {/* Horizontally scrollable badges row */}
-                            <Box
-                              overflowX="auto"
-                              whiteSpace="nowrap"
-                              sx={{
-                                '&::-webkit-scrollbar': { display: 'none' },
-                                'scrollbarWidth': 'none',
-                                'msOverflowStyle': 'none'
-                              }}
-                              position="relative"
-                              mb={3}
-                              pr={8}
-                            >
-                              <HStack spacing={2} display="inline-flex" minW="max-content">
-                                <Badge colorScheme="gray" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
-                                  DOB: {patient.dob ? moment(patient.dob).format("DD MMM YYYY") : "N/A"}
-                                </Badge>
-                                <Badge colorScheme="green" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
-                                  Age: {patient.age || "N/A"}
-                                </Badge>
-                                <Badge colorScheme="blue" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
-                                  Email: {patient.email || "N/A"}
-                                </Badge>
-                                <Badge colorScheme="teal" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
-                                  Created: {moment(patient.created_at).format("DD MMM YYYY")}
-                                </Badge>
-                              </HStack>
-                            </Box>
-                            {/* Action buttons on separate line */}
-                            <Flex justify="flex-end" gap={2}>
-                              <IconButton
-                                isDisabled={!hasPermission("PATIENT_UPDATE")}
-                                size="sm"
-                                variant="ghost"
-                                aria-label="Refer"
-                                colorScheme="orange"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedData(patient);
-                                  referonOpen();
-                                }}
-                              >
-                                Refer
-                              </IconButton>
-                              <IconButton
-                                isDisabled={!hasPermission("PATIENT_UPDATE")}
-                                size="sm"
-                                variant="ghost"
-                                aria-label="Edit"
-                                icon={<FiEdit fontSize={18} color="#3182ce" />}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/patient/${patient.id}`);
-                                }}
-                              />
-                              <IconButton
-                                isDisabled={!hasPermission("PATIENT_DELETE")}
-                                size="sm"
-                                variant="ghost"
-                                aria-label="Delete"
-                                icon={<FaTrash fontSize={18} color="#e53e3e" />}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedData(patient);
-                                  DeleteonOpen();
-                                }}
-                              />
+                  {data.data.map((patient) => {
+                    console.log("Patient data for card:", patient);
+                    console.log("Patient city for card:", patient.city);
+                    console.log("Patient address for card:", patient.address);
+                    return (
+                      <Card
+                        key={patient.id}
+                        bg={cardBg}
+                        border="1px solid"
+                        borderColor="gray.300"
+                        borderRadius="lg"
+                        cursor="pointer"
+                        transition="all 0.2s ease-in-out"
+                        _hover={{
+                          transform: "translateY(-2px)",
+                          boxShadow: "lg",
+                          borderColor: "blue.400"
+                        }}
+                        onClick={() => navigate(`/patient/${patient.id}`)}
+                        p={{ base: 2, md: 4 }}
+                        mx={{ base: 0.5, md: 0 }}
+                      >
+                        <CardBody p={0}>
+                          <VStack spacing={3} align="stretch">
+                            {/* Header with ID Badge and Gender */}
+                            <Flex justify="space-between" align="center">
+                              <Badge colorScheme="purple" py="2px" px="8px" fontSize="xs" borderRadius="none">
+                                #{patient.id}
+                              </Badge>
+                              <Badge colorScheme={patient.gender === "Male" ? "blue" : "pink"} fontSize="0.8em" px={2} py={1} borderRadius="none">
+                                {patient.gender}
+                              </Badge>
                             </Flex>
-                          </Box>
-                        </VStack>
-                      </CardBody>
-                    </Card>
-                  ))}
+                            {/* Image and Name */}
+                            <HStack spacing={3} align="center">
+                              <Avatar
+                                src={patient.image ? imageBaseURL + patient.image : "/admin/profilePicturePlaceholder.png"}
+                                size="md"
+                                name={`${patient.f_name} ${patient.l_name}`}
+                                bg="purple.500"
+                                color="white"
+                                border="2px solid #805ad5"
+                                fontWeight="bold"
+                              />
+                              <Box flex={1} minW={0}>
+                                <Text fontWeight="600" fontSize="sm" color="gray.800" noOfLines={1}>
+                                  {patient.f_name} {patient.l_name}
+                                </Text>
+                                <Text fontSize="xs" color="gray.600" noOfLines={1}>
+                                  {patient.phone}
+                                </Text>
+                              </Box>
+                            </HStack>
+                            {/* Bottom details section */}
+                            <Divider borderColor={borderColor} mt={4} />
+                            <Box px={4} py={3} borderBottomRadius="none" bg={useColorModeValue('gray.50', 'gray.800')}>
+                              {/* Horizontally scrollable badges row */}
+                              <Box
+                                overflowX="auto"
+                                whiteSpace="nowrap"
+                                sx={{
+                                  '&::-webkit-scrollbar': { display: 'none' },
+                                  'scrollbarWidth': 'none',
+                                  'msOverflowStyle': 'none'
+                                }}
+                                position="relative"
+                                mb={3}
+                                pr={8}
+                              >
+                                <HStack spacing={2} display="inline-flex" minW="max-content">
+                                  <Badge colorScheme="gray" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
+                                    DOB: {patient.dob ? moment(patient.dob).format("DD MMM YYYY") : "N/A"}
+                                  </Badge>
+                                  <Badge colorScheme="green" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
+                                    Age: {patient.age || "N/A"}
+                                  </Badge>
+                                  <Badge colorScheme="blue" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
+                                    Email: {patient.email || "N/A"}
+                                  </Badge>
+                                  <Badge colorScheme="purple" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
+                                    City: {patient.city || "N/A"}
+                                  </Badge>
+                                  <Badge colorScheme="orange" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
+                                    Address: {patient.address || "N/A"}
+                                  </Badge>
+                                  <Badge colorScheme="teal" variant="solid" fontSize="xs" px={3} py={1} borderRadius="none" fontWeight="bold">
+                                    Created: {moment(patient.created_at).format("DD MMM YYYY")}
+                                  </Badge>
+                                </HStack>
+                              </Box>
+                              {/* Action buttons on separate line */}
+                              <Flex justify="flex-end" gap={2}>
+                                <IconButton
+                                  isDisabled={!hasPermission("PATIENT_UPDATE")}
+                                  size="sm"
+                                  variant="ghost"
+                                  aria-label="Refer"
+                                  colorScheme="orange"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedData(patient);
+                                    referonOpen();
+                                  }}
+                                >
+                                  Refer
+                                </IconButton>
+                                <IconButton
+                                  isDisabled={!hasPermission("PATIENT_UPDATE")}
+                                  size="sm"
+                                  variant="ghost"
+                                  aria-label="Edit"
+                                  icon={<FiEdit fontSize={18} color="#3182ce" />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/patient/${patient.id}`);
+                                  }}
+                                />
+                                <IconButton
+                                  isDisabled={!hasPermission("PATIENT_DELETE")}
+                                  size="sm"
+                                  variant="ghost"
+                                  aria-label="Delete"
+                                  icon={<FaTrash fontSize={18} color="#e53e3e" />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedData(patient);
+                                    DeleteonOpen();
+                                  }}
+                                />
+                              </Flex>
+                            </Box>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })}
                 </Grid>
               ) : (
                 <Alert status="info" borderRadius="lg">

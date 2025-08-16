@@ -63,6 +63,9 @@ export default function UpdatePatient() {
 
   const getPatient = async () => {
     const res = await GET(admin.token, `get_patients/${id}`);
+    console.log("API response for patient:", res);
+    console.log("Patient city:", res.data.city);
+    console.log("Patient address:", res.data.address);
     setisd_code(res.data.isd_code);
     return res.data;
   };
@@ -73,6 +76,10 @@ export default function UpdatePatient() {
   });
 
   const AddNew = async (data) => {
+    console.log("Update form data received:", data);
+    console.log("City value:", data.city);
+    console.log("Address value:", data.address);
+    
     let formData = {
       id: id,
       isd_code,
@@ -80,6 +87,8 @@ export default function UpdatePatient() {
       age: data.age || "",
     };
 
+    console.log("Final update form data:", formData);
+    
     try {
       setisLoading(true);
       const res = await ADD(admin.token, "update_patient", formData);
@@ -447,7 +456,7 @@ export default function UpdatePatient() {
                         <Input
                           size={"sm"}
                           borderRadius={6}
-                          type="email"
+                          type="text"
                           placeholder="State"
                           {...register("state")}
                           defaultValue={patientDetails?.state}
@@ -462,7 +471,7 @@ export default function UpdatePatient() {
                           type="text"
                           placeholder="City"
                           {...register("city")}
-                          defaultValue={patientDetails.city}
+                          defaultValue={patientDetails?.city}
                           w="100%"
                         />
                       </FormControl>
@@ -474,7 +483,7 @@ export default function UpdatePatient() {
                           type="number"
                           placeholder="Postal Code"
                           {...register("postal_code")}
-                          defaultValue={patientDetails.postal_code}
+                          defaultValue={patientDetails?.postal_code}
                           w="100%"
                         />
                       </FormControl>
