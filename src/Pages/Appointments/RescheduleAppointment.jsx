@@ -172,7 +172,7 @@ export default function RescheduleAppointment({ data, isOpen, onClose }) {
     return <Loading />;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl" scrollBehavior="inside" blockScrollOnMount={false}>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent
         maxW={{ base: "95vw", md: "600px" }}
@@ -181,6 +181,11 @@ export default function RescheduleAppointment({ data, isOpen, onClose }) {
         bg={bgColor}
         border="1px solid"
         borderColor={borderColor}
+        maxH={{ base: "100svh", md: "85vh" }}
+        display="flex"
+        flexDirection="column"
+        overflow="hidden"
+        minH={0}
       >
         <ModalHeader 
           fontSize="lg" 
@@ -188,11 +193,12 @@ export default function RescheduleAppointment({ data, isOpen, onClose }) {
           py={4}
           borderBottom="1px solid"
           borderColor={borderColor}
+          flexShrink={0}
         >
           Reschedule Appointment
         </ModalHeader>
         <ModalCloseButton top={4} right={4} />
-        <ModalBody p={6}>
+        <ModalBody p={6} overflowY="auto" flex="1" minH={0} sx={{ WebkitOverflowScrolling: "touch" }} style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}>
           <VStack spacing={6} align="stretch">
             {/* Date Selection */}
             <Box>
@@ -334,7 +340,7 @@ export default function RescheduleAppointment({ data, isOpen, onClose }) {
 
         <Divider borderColor={borderColor} />
         
-        <HStack spacing={3} p={6} justify="flex-end">
+        <HStack spacing={3} p={6} justify="flex-end" flexShrink={0}>
           <Button
             colorScheme="gray"
             variant="outline"

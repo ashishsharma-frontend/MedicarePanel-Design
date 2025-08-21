@@ -150,7 +150,7 @@ export default function AvailableTimeSlotes({
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl" scrollBehavior="inside" blockScrollOnMount={false}>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <ModalContent
         maxW={{ base: "95vw", md: "600px" }}
@@ -159,6 +159,11 @@ export default function AvailableTimeSlotes({
         bg={bgColor}
         border="1px solid"
         borderColor={borderColor}
+        maxH={{ base: "100svh", md: "85vh" }}
+        display="flex"
+        flexDirection="column"
+        overflow="hidden"
+        minH={0}
       >
         <ModalHeader
           fontSize="lg"
@@ -166,11 +171,12 @@ export default function AvailableTimeSlotes({
           py={4}
           borderBottom="1px solid"
           borderColor={borderColor}
+          flexShrink={0}
         >
           Select Date and Time Slot
         </ModalHeader>
         <ModalCloseButton top={4} right={4} />
-        <ModalBody p={6}>
+        <ModalBody p={6} overflowY="auto" flex="1" minH={0} sx={{ WebkitOverflowScrolling: "touch" }} style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}>
           <VStack spacing={6} align="stretch">
             {/* Date Selection */}
             <Box>

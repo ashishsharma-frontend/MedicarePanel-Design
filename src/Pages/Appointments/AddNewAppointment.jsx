@@ -370,6 +370,8 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
         size="xl"
         onOverlayClick={false}
         isCentered
+        scrollBehavior="inside"
+        blockScrollOnMount={false}
       >
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
         <ModalContent
@@ -381,6 +383,11 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
           border="1px solid"
           borderColor={borderColor}
           boxShadow="lg"
+          maxH={{ base: "100svh", md: "85vh" }}
+          display="flex"
+          flexDirection="column"
+          overflow="hidden"
+          minH={0}
         >
           <ModalHeader 
             fontSize="lg"
@@ -389,11 +396,20 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
             py={3}
             borderBottom="1px solid"
             borderColor={borderColor}
+            flexShrink={0}
           >
             Add New Appointment
           </ModalHeader>
           <ModalCloseButton top={3} right={3} />
-          <ModalBody px={4} py={4}>
+          <ModalBody
+            px={4}
+            py={4}
+            overflowY="auto"
+            flex="1"
+            minH={0}
+            sx={{ WebkitOverflowScrolling: "touch" }}
+            style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}
+          >
             <VStack spacing={4} align="stretch">
               {/* Patient & Doctor Selection */}
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
@@ -657,7 +673,7 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
               </Box>
             </VStack>
           </ModalBody>
-          <ModalFooter px={4} py={3} borderTop="1px solid" borderColor={borderColor}>
+          <ModalFooter px={4} py={3} borderTop="1px solid" borderColor={borderColor} flexShrink={0}>
             <HStack spacing={3} w="100%">
               <Button
                 colorScheme="gray"
