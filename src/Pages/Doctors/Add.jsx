@@ -30,6 +30,9 @@ import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { ComboboxDemo } from "../../Components/ComboBox";
+import { MultiTagInput } from "../../Components/MultiTaginput";
+import { ClinicComboBox } from "../../Components/ClinicComboBox";
 import { ADD, GET } from "../../Controllers/ApiControllers";
 import ShowToast from "../../Controllers/ShowToast";
 import admin from "../../Controllers/admin";
@@ -44,12 +47,12 @@ export default function AddDoctor() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [profilePicture, setprofilePicture] = useState(null);
-  const [departmentID, setdepartmentID] = useState("");
+  const [departmentID, setdepartmentID] = useState();
   const [specializationID, setspecializationID] = useState([]);
   const [isd_code, setisd_code] = useState("+91");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { clinicsData } = UseClinicsData();
-  const [selectedClinic, setselectedClinic] = useState(null);
+  const [selectedClinic, setselectedClinic] = useState();
   const inputRef = useRef();
 
   const handleFileChange = (event) => {
@@ -64,19 +67,19 @@ export default function AddDoctor() {
     if (!departmentID) {
       return ShowToast(toast, "error", "Select department");
     }
-    if (!specializationID.length) {
+    if (!specializationID || specializationID.length === 0) {
       return ShowToast(toast, "error", "Select specialization");
     }
-    if (!selectedClinic || !selectedClinic.id) {
+    if (!selectedClinic) {
       return ShowToast(toast, "error", "Select clinic");
     }
     let formData = {
       isd_code: isd_code,
       image: profilePicture,
-      department: Number(departmentID),
-      specialization: specializationID.join(", "),
+      department: departmentID,
+      specialization: Array.isArray(specializationID) ? specializationID.join(", ") : specializationID,
       active: 0,
-      clinic_id: Number(selectedClinic.id),
+      clinic_id: selectedClinic.id,
       ...data,
     };
     try {
@@ -87,9 +90,9 @@ export default function AddDoctor() {
         ShowToast(toast, "success", "Doctor Added!");
         queryClient.invalidateQueries("doctors");
         reset();
-        setdepartmentID("");
+        setdepartmentID();
         setspecializationID([]);
-        setselectedClinic(null);
+        setselectedClinic();
         setprofilePicture(null);
         navigate(`/doctor/update/${res.id}`);
       } else {
@@ -118,6 +121,22 @@ export default function AddDoctor() {
     queryKey: ["specialization"],
     queryFn: getSpclizeList,
   });
+
+  // Transform data to have 'title' property for custom components
+  const departmentListWithTitle = departmentList?.map((dept) => ({
+    ...dept,
+    title: dept.name || dept.title,
+  }));
+
+  const specializationListWithTitle = specializationList?.map((spec) => ({
+    ...spec,
+    title: spec.name || spec.title,
+  }));
+
+  const clinicsDataWithTitle = clinicsData?.map((clinic) => ({
+    ...clinic,
+    title: clinic.name || clinic.title,
+  }));
 
   return (
     <Box
@@ -384,26 +403,11 @@ export default function AddDoctor() {
                   >
                     Department
                   </FormLabel>
-                  <Select
-                    placeholder="Select Department"
-                    borderRadius="lg"
-                    size="md"
-                    bg="#F8FAFC"
-                    fontSize="sm"
-                    value={departmentID}
-                    onChange={(e) => setdepartmentID(e.target.value)}
-                    _focus={{ borderColor: "#2563EB", boxShadow: "0 0 0 1px #2563EB" }}
-                  >
-                    <option value="" disabled>
-                      Select Department
-                    </option>
-                    {departmentList &&
-                      departmentList.map((dep) => (
-                        <option key={dep.id} value={dep.id}>
-                          {dep.name}
-                        </option>
-                      ))}
-                  </Select>
+                  <ComboboxDemo
+                    name="Department"
+                    data={departmentListWithTitle}
+                    setState={setdepartmentID}
+                  />
                 </FormControl>
                 <FormControl isRequired>
                   <FormLabel
@@ -413,26 +417,11 @@ export default function AddDoctor() {
                   >
                     Specialization
                   </FormLabel>
-                  <Select
-                    placeholder="Select Specialization"
-                    borderRadius="lg"
-                    size="md"
-                    bg="#F8FAFC"
-                    fontSize="sm"
-                    value={specializationID[0] || ""}
-                    onChange={(e) => setspecializationID([e.target.value])}
-                    _focus={{ borderColor: "#2563EB", boxShadow: "0 0 0 1px #2563EB" }}
-                  >
-                    <option value="" disabled>
-                      Select Specialization
-                    </option>
-                    {specializationList &&
-                      specializationList.map((sp) => (
-                        <option key={sp.id} value={sp.id}>
-                          {sp.name}
-                        </option>
-                      ))}
-                  </Select>
+                  <MultiTagInput
+                    name="Specialization"
+                    data={specializationListWithTitle}
+                    setState={setspecializationID}
+                  />
                 </FormControl>
                 <FormControl isRequired>
                   <FormLabel
@@ -442,33 +431,11 @@ export default function AddDoctor() {
                   >
                     Clinic
                   </FormLabel>
-                  <Select
-                    placeholder="Select Clinic"
-                    borderRadius="lg"
-                    size="md"
-                    bg="#F8FAFC"
-                    fontSize="sm"
-                    value={selectedClinic?.id ? String(selectedClinic.id) : ""}
-                    onChange={(e) => {
-                      let clinic =
-                        clinicsData &&
-                        clinicsData.find(
-                          (c) => String(c.id) === e.target.value
-                        );
-                      setselectedClinic(clinic || null);
-                    }}
-                    _focus={{ borderColor: "#2563EB", boxShadow: "0 0 0 1px #2563EB" }}
-                  >
-                    <option value="" disabled>
-                      Select Clinic
-                    </option>
-                    {clinicsData &&
-                      clinicsData.map((clinic) => (
-                        <option key={clinic.id} value={clinic.id}>
-                          {clinic.name}
-                        </option>
-                      ))}
-                  </Select>
+                  <ClinicComboBox
+                    name="Clinic"
+                    data={clinicsDataWithTitle}
+                    setState={setselectedClinic}
+                  />
                 </FormControl>
               </SimpleGrid>
 
@@ -581,19 +548,19 @@ export default function AddDoctor() {
                 <HStack justify="space-between">
                   <Text fontSize="sm" color="gray.600">Department:</Text>
                   <Badge colorScheme="blue" fontSize="xs">
-                    {departmentList?.find(d => d.id == departmentID)?.name || "Not Selected"}
+                    {departmentID && departmentList?.find(d => d.id == departmentID)?.name || "Not Selected"}
                   </Badge>
                 </HStack>
                 <HStack justify="space-between">
                   <Text fontSize="sm" color="gray.600">Specialization:</Text>
                   <Badge colorScheme="green" fontSize="xs">
-                    {specializationID.length > 0 ? "Selected" : "Not Selected"}
+                    {specializationID && specializationID.length > 0 ? `${specializationID.length} Selected` : "Not Selected"}
                   </Badge>
                 </HStack>
                 <HStack justify="space-between">
                   <Text fontSize="sm" color="gray.600">Clinic:</Text>
                   <Badge colorScheme="purple" fontSize="xs">
-                    {selectedClinic?.name || "Not Selected"}
+                    {selectedClinic?.name || selectedClinic?.title || "Not Selected"}
                   </Badge>
                 </HStack>
               </VStack>
